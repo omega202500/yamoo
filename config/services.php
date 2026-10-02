@@ -13,10 +13,15 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-    'campay' => [
-        'base_url'    => env('CAMPAY_BASE_URL'),
-        'token'       => env('CAMPAY_TOKEN'),
-        'webhook_key' => env('CAMPAY_WEBHOOK_KEY'),
+    // 'campay' => [
+    //     'base_url'    => env('CAMPAY_BASE_URL'),
+    //     'token'       => env('CAMPAY_TOKEN'),
+    //     'webhook_key' => env('CAMPAY_WEBHOOK_KEY'),
+    // ],
+    'fapshi' => [
+        'base_url' => env('FAPSHI_BASE_URL'),
+        'api_user' => env('FAPSHI_API_USER'),
+        'api_key'  => env('FAPSHI_API_KEY'),
     ],
     'whatsapp_group_link' => env('WHATSAPP_GROUP_LINK'),
     'access_amount' => env('ACCESS_AMOUNT', 1050), // 1050 par défaut si la variable est absente

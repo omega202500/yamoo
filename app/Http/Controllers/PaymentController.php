@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
-use App\Services\CamPayService;
+use App\Services\FapshiService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -14,7 +14,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function pay(Request $request, CamPayService $campay)
+    public function pay(Request $request, FapshiService $fapshi)
     {
         $request->validate(['phone' => 'required|string']);
 
@@ -31,33 +31,33 @@ class PaymentController extends Controller
             'status' => 'pending',
         ]);
 
-        $result = $campay->getPaymentLink($amount, (string) $payment->id, $phone);
+        $result = $fapshi->initiatePay($amount, (string) $payment->id, $phone);
 
         if (!isset($result['link'])) {
             $payment->update(['status' => 'failed']);
             return back()->withErrors(['phone' => $result['message'] ?? 'Erreur lors de l’initiation du paiement.']);
         }
 
-        session(['last_campay_reference' => $result['reference']]);
-        $payment->update(['campay_reference' => $result['reference']]);
+        session(['last_fapshi_trans_id' => $result['transId']]);
+        $payment->update(['campay_reference' => $result['transId']]);
 
         return redirect()->away($result['link']);
     }
 
-    public function confirmation(Request $request, CamPayService $campay)
+    public function confirmation(Request $request, FapshiService $fapshi)
     {
-        $reference = $request->query('reference') ?? session('last_campay_reference');
+        $reference = $request->query('reference') ?? session('last_fapshi_trans_id');
 
         $payment = $reference
             ? Payment::where('campay_reference', $reference)->first()
             : null;
 
         if ($payment && $payment->status === 'pending') {
-            $status = $campay->checkStatus($payment->campay_reference);
-            $campayStatus = strtoupper($status['status'] ?? '');
+            $status = $fapshi->checkStatus($payment->campay_reference);
+            $fapshiStatus = strtoupper($status['status'] ?? '');
 
             $payment->update([
-                'status' => match ($campayStatus) {
+                'status' => match ($fapshiStatus) {
                     'SUCCESSFUL' => 'success',
                     'FAILED' => 'failed',
                     default => 'pending',
